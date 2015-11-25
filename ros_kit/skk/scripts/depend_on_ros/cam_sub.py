@@ -35,6 +35,7 @@ class Face_Service():
                     #TODO: find a more accurate transform
 		            pixel_x = (head_pose.x * focal_lengh)/self.head_pose.z
 		            pixel_y = (-head_pose.y * focal_lengh)/self.head_pose.z
+                    
                     meter_z = self.head_pose.z/1000.0
 
 		            self.pixel_center.append(head_pose)
