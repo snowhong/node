@@ -27,44 +27,46 @@ class Face_Service():
                 self.pub = rospy.Publisher('face_detected', Int8, queue_size=10)
                 self.rate = rospy.Rate(10)
 
-        def utpa_callback(self, user_pose_array):
-                num = user_pose_array.numUsers
-                #that is how to get access to the 
-                #finally, get access to the x value
-                print type(user_pose_array.users[0].head)
-                print "user number:", num
-
-                self.people_number = user_pose_array.numUsers
-
-                #clear it to record data of next time
-                self.head_pose = []
-                self.pixel_center = []
-
-                if num > 0:
-                    #after you append it, it because a list type
-                    self.head_pose.append(user_pose_array.users[num - 1].head)
-
-                    print type(self.head_pose)
-
-                    focal_length = 525.0
-                    optical_x = 319.5 
-                    optical_y = 239.5
-                    #format the raw pose data that can match with pixel in image
-                    #TODO: find a more accurate transform
-
-		    pixel_x = (self.head_pose[num - 1].x * focal_length)/self.head_pose[num - 1].z
-		    pixel_y = (- self.head_pose[num - 1].y * focal_length)/self.head_pose[num - 1].z
-                    
-                    #set it as meter unit
-                    meter_z = self.head_pose[num - 1].z/1000.0
-
-		    self.pixel_center.append(self.head_pose)
-                    self.pixel_center[self.people_number - num].x = optical_x + pixel_x
-		    self.pixel_center[self.people_number - num].y = optical_y + pixel_y
-                    self.pexel_center[self.people_number - num].z = meter_z
-                    print 'pixel_center:', pixel_center
-
-                    num = num - 1
+#        def utpa_callback(self, user_pose_array):
+#                #num = user_pose_array.numUsers
+#                #that is how to get access to the 
+#                #finally, get access to the x value
+#                print type(user_pose_array.users[0].head)
+#
+#                self.people_number = user_pose_array.numUsers
+#                num = self.people_number
+#                print "user number:", self.people_number
+#
+#                #clear it to record data of next time
+#                self.head_pose = []
+#                self.pixel_center = []
+#
+#
+#                if num > 0:
+#                    #after you append it, it because a list type
+#                    self.head_pose.append(user_pose_array.users[num - 1].head)
+#
+#                    print type(self.head_pose)
+#
+#                    focal_length = 525.0
+#                    optical_x = 319.5 
+#                    optical_y = 239.5
+#                    #format the raw pose data that can match with pixel in image
+#                    #TODO: find a more accurate transform
+#
+#		    pixel_x = (self.head_pose[num - 1].x * focal_length)/self.head_pose[num - 1].z
+#		    pixel_y = (- self.head_pose[num - 1].y * focal_length)/self.head_pose[num - 1].z
+#                    
+#                    #set it as meter unit
+#                    meter_z = self.head_pose[num - 1].z/1000.0
+#
+#		    self.pixel_center.append(self.head_pose)
+#                    self.pixel_center[self.people_number - num].x = optical_x + pixel_x
+#		    self.pixel_center[self.people_number - num].y = optical_y + pixel_y
+#                    self.pexel_center[self.people_number - num].z = meter_z
+#                    print 'pixel_center:', pixel_center
+#
+#                    num = num - 1
 
         def image_callback(self, image):
                 try:
@@ -76,8 +78,8 @@ class Face_Service():
                     if num > 0:
                         print num
                         for pi in self.pixel_center[num - 1]:
-                            cv2.rectangle(cv_image, (pi.x - 50, pi.y - 50), (pi.x + 50, pi.y + 50), (255, 0, 0), 2)
-                            cv2.circle(cv_image, (int(pixel_center.x), int(pixel_center.y)), 10, (255,0,0),-1)
+                            cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
+                            cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
                         num = num - 1
 
                     #draw the face rectangle
