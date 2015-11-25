@@ -16,6 +16,7 @@ from skk.msg import UserTrackerPoseArray
 from primesense import openni2
 from primesense import nite2
 import matplotlib.pyplot as plt
+import numpy as np
 
 class Skeleton():
     def __init__(self):
@@ -37,7 +38,7 @@ class Skeleton():
             depth_array = np.ndarray((depth_frame.height,depth_frame.width),dtype=np.uint16,buffer=depth_frame_data)
 
             #Need to clear head pose data in the array
-            self.utp.projective=[]
+            self.utp.head=[]
             self.utpa.users=[]
             for fu in frame.users:
                 user = fu
@@ -45,7 +46,7 @@ class Skeleton():
                     self.ut.start_skeleton_tracking(fu.id)
                     print 'get new user:', fu.id
                     #print 'user skeleton state:',user.skeleton.state
-                # 2 means skeleton ok, if its a new user don't need to get state.
+                    #2 means skeleton ok, if its a new user don't need to get state.
                 elif user.skeleton.state == 2:
                     #head flag
                     head = user.skeleton.joints[0]
@@ -55,7 +56,8 @@ class Skeleton():
                         self.head_pose.y = head.position.y
                         self.head_pose.z = head.position.z
                         self.utp.uid = fu.id
-                        self.utp.projective.append(self.head_pose)
+                        #self.utp.head.append(self.head_pose)
+                        self.utp.head = self.head_pose
 
                         self.utpa.numUsers = len(frame.users)
                         self.utpa.users.append(self.utp)
@@ -66,8 +68,8 @@ class Skeleton():
 
 if __name__ == '__main__':
     rospy.init_node('skeleton_server')
-    sk = Skeleton()
     try:
+        sk = Skeleton()
         sk.skeleton_tracker()
     except rospy.ROSInterruptException:
         pass
