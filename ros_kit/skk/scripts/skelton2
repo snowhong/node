@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+import os
+import sys
+import ctypes
+import rospy
+<<<<<<< HEAD
+import rospkg
+=======
+import rospack
+>>>>>>> 0c7d0c060ad0500f0b62565f1a61dd8ee4734430
+from primesense import openni2
+from primesense import nite2
+
+nite2.initialize()
+ut=nite2.UserTracker.open_any()
+#rospack.get_path()
+<<<<<<< HEAD
+class test():
+    def __init__(self):
+        self.tt=1
+
+    def skeleton_tracker(self):
+        while(1):
+        	frame = ut.read_frame()
+        	depth_frame = frame.get_depth_frame()
+        	for fu in frame.users:
+        	    users = fu
+        	    if users.is_new():
+        		ut.start_skeleton_tracking(fu.id)
+                        print 'get a new user!'
+        		print users.skeleton.state
+        	    elif users.skeleton.state == 2:
+        		head = users.skeleton.joints[0]
+        		if(head.positionConfidence > 0.5):
+        		    print fu.id
+        	#	    print head.position.x/1000.0
+        	#	    print head.position.y/1000.0
+        	#	    #Depth direction
+        	#	    print head.position.z/1000.0
+if __name__ == '__main__':
+    we = test()
+    print type(we)
+    we.skeleton_tracker()
+=======
+
+while(1):
+	frame = ut.read_frame()
+	depth_frame = frame.get_depth_frame()
+	for fu in frame.users:
+	    users = fu
+	    if users.is_new():
+		ut.start_skeleton_tracking(fu.id)
+		print users.skeleton.state
+	    elif users.skeleton.state == 2:
+		head = users.skeleton.joints[0]
+		if(head.positionConfidence > 0.5):
+		    print fu.id
+		    print head.position.x/1000.0
+		    print head.position.y/1000.0
+		    #Depth direction
+		    print head.position.z/1000.0
+>>>>>>> 0c7d0c060ad0500f0b62565f1a61dd8ee4734430
+

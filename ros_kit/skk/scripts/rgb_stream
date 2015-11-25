@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+import os
+import sys
+import ctypes
+import cv2
+import numpy as np
+from primesense import openni2
+from primesense import _openni2 as c_api
+from primesense import nite2
+
+#Initialized OpenNI
+openni2.initialize() 
+status = openni2.is_initialized()
+if status:
+    print 'OpenNI2 Initialization Done !'
+else:
+    print 'OpenNI2 Initialization Failed !'
+
+#Open Device
+dev = openni2.Device.open_any()
+
+def get_rgb():
+     #bgr   = np.fromstring(color_stream.read_frame().get_buffer_as_uint8(),dtype=np.uint8).reshape(240,320,3)
+     #bgr   = np.fromstring(color_stream.read_frame().get_buffer_as_uint8(),dtype=np.uint8).reshape(480,640,3)
+     bgr   = np.fromstring(color_stream.read_frame().get_buffer_as_uint8(),dtype=np.uint8).reshape(960,1280,3)
+     rgb   = cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
+     return rgb
+
+color_stream = dev.create_color_stream()
+#print 'device info:',dev.get_sensor_info()
+#print 'steam info:',color_stream.get_device_info()
+print 'device info:',dev.get_device_info()
+print 'rgb video mode:', color_stream.get_video_mode() 
+#color_stream.set_video_mode(c_api.OniVideoMode(pixelFormat=c_api.OniPixelFormat.ONI_PIXEL_FORMAT_RGB888, resolutionX=320, resolutionY=240, fps=30))
+#color_stream.set_video_mode(c_api.OniVideoMode(pixelFormat=c_api.OniPixelFormat.ONI_PIXEL_FORMAT_RGB888, resolutionX=640, resolutionY=480, fps=30))
+color_stream.set_video_mode(c_api.OniVideoMode(pixelFormat=c_api.OniPixelFormat.ONI_PIXEL_FORMAT_RGB888, resolutionX=1280, resolutionY=960, fps=30))
+print 'rgb video mode now:', color_stream.get_video_mode() 
+
+color_stream.start()
+
+color_frame = color_stream.read_frame()
+#need another argument
+
+#depth_stream = dev.create_depth_stream()
+#depth_stream.start()
+#depth_frame = depth_stream.read_frame()
+
+while(1):
+    cv2.waitKey(1)
+    rgb = get_rgb()
+    cv2.imshow('rgb', rgb)
+    
+openni2.unload()

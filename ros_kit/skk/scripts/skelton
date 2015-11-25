@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+import os
+import sys
+import ctypes
+from primesense import openni2
+from primesense import nite2
+<<<<<<< HEAD
+openni2.initialize()     # can also accept the path of the OpenNI redistribution
+
+dev = openni2.Device.open_any()
+#dev = openni2.Device.open_all()
+print type(dev)
+
+while(1):
+    depth_stream = dev.create_depth_stream()
+    depth_stream.start()
+    frame = depth_stream.read_frame()
+    frame_data = frame.get_buffer_as_uint16()
+    depth_stream.stop()
+    
+openni2.unload()
+
+#nite2.initialize()
+#print nite2.is_initialized()
+#print nite2.get_version()
+#ut=nite2.UserTracker.open_any()
+#utf=nite2.UserTrackerFrame
+#while(1):
+##print ut.get_skeleton_smoothing_factor()
+#	frame = ut.read_frame()
+#	depth_frame = frame.get_depth_frame()
+#	#type: lists
+##	print len(frame.users)
+=======
+#openni2.initialize()     # can also accept the path of the OpenNI redistribution
+
+#dev = openni2.Device.open_any()
+#dev = openni2.Device.open_all()
+#print dev.get_sensor_info()
+#
+#depth_stream = dev.create_depth_stream()
+#depth_stream.start()
+#frame = depth_stream.read_frame()
+#frame_data = frame.get_buffer_as_uint16()
+#depth_stream.stop()
+#
+#openni2.unload()
+
+nite2.initialize()
+#print nite2.is_initialized()
+#print nite2.get_version()
+ut=nite2.UserTracker.open_any()
+#utf=nite2.UserTrackerFrame
+while(1):
+#print ut.get_skeleton_smoothing_factor()
+	frame = ut.read_frame()
+	depth_frame = frame.get_depth_frame()
+	#type: lists
+#	print len(frame.users)
+>>>>>>> 0c7d0c060ad0500f0b62565f1a61dd8ee4734430
+#if len(frame.users) == 1:
+#print frame.users[0].state
+#		print frame.users[0].is_new()
+#if(users.is_new()):
+#		print frame.users[0].id
+#		print frame.users[0]
+#	print frame.users_by_id
+#	print "================="
+#	nite::UserData users
+#	if len(frame.users)==1:
+#		ut.start_skeleton_tracking(frame.users[0].id)
+#		print ut.is_tracking(frame.users[0].id)
+<<<<<<< HEAD
+#
+#	for fu in frame.users:
+#print fu
+#		users = fu
+#		print ut.is_tracking(fu.id)
+#		if users.is_new():
+#			print "new"
+#			ut.start_skeleton_tracking(fu.id)
+#		elif ut.is_tracking(fu.id):
+#			print "old"
+#			users.skeleton.get_joint(nite2.SkeletonJoint.NiteJointType.NITE_JOINT_HEAD)
+#			print head.positionConfidence
+=======
+
+	for fu in frame.users:
+#print fu
+		users = fu
+		print ut.is_tracking(fu.id)
+		if users.is_new():
+			print "new"
+			ut.start_skeleton_tracking(fu.id)
+		elif ut.is_tracking(fu.id):
+			print "old"
+			users.skeleton.get_joint(nite2.SkeletonJoint.NiteJointType.NITE_JOINT_HEAD)
+			print head.positionConfidence
+>>>>>>> 0c7d0c060ad0500f0b62565f1a61dd8ee4734430
+#			if(head.positionConfidence > 0.5):
+#				print frame.users[i].id
+#				print head.position.x
+#				print head.position.y
+#				print head.position.z
+
+
+

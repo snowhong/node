@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+import os
+import sys
+import ctypes
+from primesense import openni2
+#from primesense import _openni2 as o_api
+from primesense import nite2
+#from primesense import _nite2 as n_api
+import cv2 
+import rospy
+import roslib
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+from std_msgs.msg import Bool
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
+
+class Face_Service():
+        def __init__(self):
+            ##Initialized OpenNI and Nite
+            nite2.initialize()
+            status = openni2.is_initialized()
+            if status:
+                    print 'OpenNI2 Initialization Done !'
+            else:
+                    print 'OpenNI2 Initialization Failed !'
+            head_pos = nite2.c_api.NitePoint3f()
+
+        def initialize_device(self):
+            ##Open Device
+            #self.dev = openni2.Device.open_any()
+            #self.dev._close()
+
+        #OPENNI CONTROL
+        def initial_device(self):
+                openni2.initialize()
+        def open_device(self):
+                self.dev = openni2.Device.open_any()
+        def close_device(self):
+                self.
+        def unload_device():
+                openni2.unload()
+
+        #NITE CONTROL
+        def open_nite(self):
+	       self.ut=nite2.UserTracker.open_any()
+        def unload_nite(self):
+                nite2.unload()
+        def initial_nite(self):
+                nite2.initialize()
+        def close_nite():
+                return
+
+        def stop_rgb(self):
+            self.color_stream.stop()
+        
+        def grab_rgb(self):
+            self.initial_device()
+            self.open_device()
+            self.color_stream = self.dev.create_color_stream()
+            self.color_stream.set_video_mode(openni2.c_api.OniVideoMode(pixelFormat=openni2.c_api.OniPixelFormat.ONI_PIXEL_FORMAT_RGB888, resolutionX=640, resolutionY=480, fps=30))
+            self.color_stream.start()
+            bgr = np.fromstring(self.color_stream.read_frame().get_buffer_as_uint8(),dtype=np.uint8).reshape(480,640,3)
+
+            rgb = cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB)
+            return rgb
+
+        def grab_depth():
+            depth_array = np.ndarray((frame.height,frame.width),dtype=np.uint16,buffer=frame_data) 
+
+        def head_image(self, image):
+	    head_range= cv2.rectangle(image, (pixel_center.x - 50, pixel_center.y - 50), (pixel_center.x + 50, pixel_center.y + 50), (255,0,0),2)
+            cv2.imshow("Head", cv_image)
+            cv2.waitKey(1)
+
+        def detect_faces(self, image,head_center):
+                _scale_Factor=1.2
+                _min_Neighbor=5
+                _min_Size=(30,30)
+                flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+
+                print 'head_center:',head_center
+		
+		focal_lengh =  525.0
+		optical_x = 319.5
+		optical_y = 239.5
+		
+		pixel_x = (head_center.x * focal_lengh)/head_center.z
+		pixel_y = (-head_center.y * focal_lengh)/head_center.z
+
+		pixel_center= head_center
+		pixel_center.x = optical_x + pixel_x
+		pixel_center.y = optical_y + pixel_y
+
+                print 'pixel_center:',pixel_center
+
+		#100*100 pixel
+		#head_image = image[(pixel_center.x - 50, pixel_center.y - 50), (pixel_center.x + 50, pixel_center.y + 50)] 
+                cv2.rectangle(image, (int(pixel_center.x - 50), int(pixel_center.y - 50)), (int(pixel_center.x + 50), int(pixel_center.y + 50)), (0, 0, 255), 2)
+
+                cv2.circle(image, (int(pixel_center.x), int(pixel_center.y)), 10, (255,0,0),-1)
+
+                #gray = cv2.cvtColor(head_image, cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+                faceCascade = cv2.CascadeClassifier('/home/robot/Robot/src/backup/ros_kit/skk/config/haarcascade_frontalface_default.xml')
+
+                faces = faceCascade.detectMultiScale(
+                                gray,
+                                _scale_Factor,
+                                _min_Neighbor,
+                                flags,
+                                _min_Size
+                                )
+		return faces
+
+	def detect_skeleton_head(self):
+	        self.ut=nite2.UserTracker.open_any()
+		while(1):
+                    time.sleep(0.01)
+		    frame = self.ut.read_frame()
+		    depth_frame = frame.get_depth_frame()
+		    for fu in frame.users:
+		        users = fu
+		        if users.is_new():
+                            print 'Get a new user! Start tracking...'
+                            #It cost time to get ensure a skeleton, if the people is moving, more fast to decide a skeleton
+		            self.ut.start_skeleton_tracking(fu.id)
+#		            print users.skeleton.state
+		        elif users.skeleton.state == 2:
+		            head = users.skeleton.joints[0]
+#                           print head.positionConfidence
+		            if(head.positionConfidence > 0.5):
+                                self.head_pos = head.position
+                                print 'return pose', self.head_pos
+                                nite2.unload()
+                                return self.head_pos
+#                               for fu2 in frame.users:
+#                               self.ut.stop_skeleton_tracking(fu2.id)
+
+        def dbug_window(img):
+            cv2.imshow('rgb',img)
+            cv2.waitkey(1)
+
+if __name__ == '__main__':
+        rospy.init_node('face_srv')
+        fd = Face_Service()
+
+        while(1):
+            fd.head_pos= fd.detect_skeleton_head()
+
+            img = fd.grab_rgb()
+    
+            test = fd.detect_faces(img, fd.head_pos)
+
+            for (x, y, w, h) in test:
+                cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+            cv2.imshow('img',img)
+            cv2.waitKey(1)
+
+        ros.spin()
