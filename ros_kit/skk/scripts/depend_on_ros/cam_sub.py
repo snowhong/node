@@ -12,89 +12,81 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from skk.msg import UserTrackerPoseArray
 from skk.msg import UserTrackerPose
+import message_filters
 
 class Face_Service():
         def __init__(self):
-                self.bridge = CvBridge()
-                self.head_sub = rospy.Subscriber("/skeleton", UserTrackerPoseArray, self.utpa_callback, queue_size = 10)
-                self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.image_callback, queue_size = 1)
+            self.bridge = CvBridge()
+            self.head_sub = message_filters.Subscriber("/skeleton", UserTrackerPoseArray)
+            self.image_sub = message_filters.Subscriber("/usb_cam/image_raw", Image)
+            #ts = message_filters.TimeSynchronizer([self.head_sub, self.image_sub], 10)
+            ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.head_sub], 10, 4)
+            ts.registerCallback(self.callback)
 
-                self.head_pose = []
-                self.pixel_center = []
-                self.people_number = 0
+            self.head_pose = []
+            self.pixel_center = []
+            self.people_number = 0
+
+            #self.pub = rospy.Publisher('face_detected', Int8, queue_size=10)
+            self.pub = rospy.Publisher('face_detected', Bool, queue_size=10)
+            self.data = Bool()
+            self.rate = rospy.Rate(10)
 
 
-                self.pub = rospy.Publisher('face_detected', Int8, queue_size=10)
-                self.rate = rospy.Rate(10)
+        def callback(self, image, user_pose_array):
+            print 'test-c'
+            self.people_number = user_pose_array.numUsers
+            num = self.people_number
+            self.head_pose = []
+            self.pixel_center = []
 
-#        def utpa_callback(self, user_pose_array):
-#                #num = user_pose_array.numUsers
-#                #that is how to get access to the 
-#                #finally, get access to the x value
-#                print type(user_pose_array.users[0].head)
-#
-#                self.people_number = user_pose_array.numUsers
-#                num = self.people_number
-#                print "user number:", self.people_number
-#
-#                #clear it to record data of next time
-#                self.head_pose = []
-#                self.pixel_center = []
-#
-#
-#                if num > 0:
-#                    #after you append it, it because a list type
-#                    self.head_pose.append(user_pose_array.users[num - 1].head)
-#
-#                    print type(self.head_pose)
-#
-#                    focal_length = 525.0
-#                    optical_x = 319.5 
-#                    optical_y = 239.5
-#                    #format the raw pose data that can match with pixel in image
-#                    #TODO: find a more accurate transform
-#
-#		    pixel_x = (self.head_pose[num - 1].x * focal_length)/self.head_pose[num - 1].z
-#		    pixel_y = (- self.head_pose[num - 1].y * focal_length)/self.head_pose[num - 1].z
-#                    
-#                    #set it as meter unit
-#                    meter_z = self.head_pose[num - 1].z/1000.0
-#
-#		    self.pixel_center.append(self.head_pose)
-#                    self.pixel_center[self.people_number - num].x = optical_x + pixel_x
-#		    self.pixel_center[self.people_number - num].y = optical_y + pixel_y
-#                    self.pexel_center[self.people_number - num].z = meter_z
-#                    print 'pixel_center:', pixel_center
-#
-#                    num = num - 1
+            #sub head pose
 
-        def image_callback(self, image):
-                try:
-                    cv_image = self.bridge.imgmsg_to_cv2(image, "bgr8")
+            while num > 0:
+                focal_length = 525.0
+                optical_x = 319.5 
+                optical_y = 239.5
 
-                    #draw the skeleton center and head rectangle
-                    num = self.people_number
+                self.head_pose.append(user_pose_array.users[self.people_number - num].head)
+                
+                print 'num:',num
+                print 'people_number',self.people_number
+                print self.head_pose
+                print len(self.pixel_center)
+                self.pixel_center.append(self.head_pose)
+                self.pixel_center[self.people_number - num].x = self.head_pose[num -1].x
+                self.pixel_center[self.people_number - num].y = self.head_pose[num -1].y
+                self.pexel_center[self.people_number - num].z = self.head_pose[num -1].z
+                print 'pixel_center:', pixel_center
+                num = num - 1
 
-                    if num > 0:
-                        print num
-                        for pi in self.pixel_center[num - 1]:
-                            cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
-                            cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
-                        num = num - 1
+            try:
+                cv_image = self.bridge.imgmsg_to_cv2(image, "bgr8")
 
-                    #draw the face rectangle
-                    detection = self.detect_faces(cv_image)
-                    for (x, y, w, h) in detection:
-                        cv2.rectangle(cv_image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                #draw the skeleton center and head rectangle
 
-                    cv2.imshow("Face & Head ", cv_image)
-                    cv2.waitKey(1)
+                print 'len: ',len(self.pixel_center)
 
-                except CvBridgeError, e:
-                    print e
+                num = self.people_number
+                while num > 0:
+                    for pi in self.pixel_center[num - 1]:
+                        cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
+                        cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
+                    num = num - 1
 
-                #publish how many skeleton detected
-                self.pub.publish(self.pixel_center)
+                #draw the face rectangle
+                detection = self.detect_faces(cv_image)
+                for (x, y, w, h) in detection:
+                    cv2.rectangle(cv_image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+                cv2.imshow("Face & Head ", cv_image)
+                cv2.waitKey(1)
+
+            except CvBridgeError, e:
+                print e
+
+            #publish how many skeleton detected
+            self.pub.publish(len(self.pixel_center))
 
         def detect_faces(self, image):
                 #parameters
@@ -123,7 +115,7 @@ class Face_Service():
 
 if __name__ == '__main__':
         rospy.init_node('face_srv')
-        try:
-            fd = Face_Service()
-        except rospy.ROSInterruptException: pass
+        print 'test'
+        fd = Face_Service()
+        print 'test2'
         rospy.spin()

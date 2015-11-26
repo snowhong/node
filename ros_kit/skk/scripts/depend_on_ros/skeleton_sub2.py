@@ -61,12 +61,17 @@ class Skeleton():
             self.utp.head=[]
             self.utpa.users=[]
             active = 0
-            dont_pub_blank_msg = 0
+            dont_pub_blank_msg = 1#Now just let it publish blank message
+
+            #Blank Message
+            self.h.stamp = rospy.Time.now()
+            self.utpa.header = self.h
+
             for fu in frame.users:
                 user = fu
                 if user.is_new():
                     self.ut.start_skeleton_tracking(fu.id)
-                    print 'get new user:', fu.id
+                    print '=============================================================get new user:', fu.id
                 #state 2(TRACKED STATES) means skeleton is active, if its a new user don't need to get state.
                 elif user.skeleton.state == 2:
                     #head flag
@@ -81,8 +86,8 @@ class Skeleton():
                         self.utp.uid = fu.id
                         self.utp.head = self.head_pose
 
-                        h.stamp = rospy.Time.now()
-                        self.utp.header = h
+                        self.h.stamp = rospy.Time.now()
+                        self.utpa.header = self.h
                         self.utpa.users.append(self.utp)
                         active = active + 1
                         dont_pub_blank_msg = 1
