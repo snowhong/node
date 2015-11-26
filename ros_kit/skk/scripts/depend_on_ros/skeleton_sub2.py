@@ -58,7 +58,7 @@ class Skeleton():
             #depth_array = np.ndarray((depth_frame.height,depth_frame.width),dtype=np.uint16,buffer=depth_frame_data)
 
             #Need to clear head pose data in the array
-            self.utp.head=[]
+            self.utp.head=Vector3()
             self.utpa.users=[]
             active = 0
             dont_pub_blank_msg = 1#Now just let it publish blank message

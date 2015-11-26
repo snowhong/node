@@ -23,8 +23,8 @@ class Face_Service():
             ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.head_sub], 10, 4)
             ts.registerCallback(self.callback)
 
-            self.head_pose = []
-            self.pixel_center = []
+            self.head_pose = Vector3()
+            self.pixel_center = Vector3()
             self.people_number = 0
 
             #self.pub = rospy.Publisher('face_detected', Int8, queue_size=10)
@@ -37,8 +37,8 @@ class Face_Service():
             print 'test-c'
             self.people_number = user_pose_array.numUsers
             num = self.people_number
-            self.head_pose = []
-            self.pixel_center = []
+            self.head_pose = Vector3()
+            self.pixel_center = Vector3()
 
             #sub head pose
 
@@ -47,17 +47,22 @@ class Face_Service():
                 optical_x = 319.5 
                 optical_y = 239.5
 
-                self.head_pose.append(user_pose_array.users[self.people_number - num].head)
+                #Vector3 class
+                self.head_pose = (user_pose_array.users[self.people_number - num].head)
+                #print type(user_pose_array.users[self.people_number - num].head)
                 
                 print 'num:',num
                 print 'people_number',self.people_number
                 print self.head_pose
-                print len(self.pixel_center)
-                self.pixel_center.append(self.head_pose)
-                self.pixel_center[self.people_number - num].x = self.head_pose[num -1].x
-                self.pixel_center[self.people_number - num].y = self.head_pose[num -1].y
-                self.pexel_center[self.people_number - num].z = self.head_pose[num -1].z
-                print 'pixel_center:', pixel_center
+                #print len(self.pixel_center)
+                self.pixel_center = self.head_pose
+                #print len(self.pixel_center)
+
+                #print type(self.pixel_center[self.people_number - num])
+                #self.pixel_center[self.people_number - num].x = self.head_pose.x
+                #self.pixel_center[self.people_number - num].y = self.head_pose.y
+                #self.pexel_center[self.people_number - num].z = self.head_pose.z
+                print 'pixel_center:', self.pixel_center
                 num = num - 1
 
             try:
@@ -65,13 +70,17 @@ class Face_Service():
 
                 #draw the skeleton center and head rectangle
 
-                print 'len: ',len(self.pixel_center)
 
                 num = self.people_number
                 while num > 0:
-                    for pi in self.pixel_center[num - 1]:
-                        cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
-                        cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
+                    #for pi in self.pixel_center[num - 1]:
+                    #    cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
+                    #    cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
+                    #num = num - 1
+
+                    pi = self.pixel_center
+                    cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
+                    cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
                     num = num - 1
 
                 #draw the face rectangle
@@ -86,7 +95,7 @@ class Face_Service():
                 print e
 
             #publish how many skeleton detected
-            self.pub.publish(len(self.pixel_center))
+            #self.pub.publish(len(self.pixel_center))
 
         def detect_faces(self, image):
                 #parameters
