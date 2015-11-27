@@ -38,7 +38,7 @@ class Skeleton():
 
         #format the raw pose data that can match with pixel in image
         #TODO: find a more accurate transform
-        pixel_x = (head.position.x * focal_length)/head.position.z
+        pixel_x = ((- head.position.x) * focal_length)/head.position.z
         pixel_y = ((- head.position.y) * focal_length)/head.position.z
         #set it in meter unit
         meter_z = head.position.z/1000.0
