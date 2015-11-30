@@ -59,8 +59,7 @@ class Skeleton():
             cv2.imshow("Crop Head", crop_image)
             cv2.waitKey(1)
 
-            resize_image =  
-            image_message = self.bridge.cv2_to_imgmsg(resize_image, encoding="bgr8")
+            image_message = self.bridge.cv2_to_imgmsg(crop_image, encoding="bgr8")
             self.pub4.publish(image_message)
 
         
