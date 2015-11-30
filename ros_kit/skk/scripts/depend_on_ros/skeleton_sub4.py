@@ -47,8 +47,13 @@ class Skeleton():
             print 'sending the head image'
             cv_image = self.bridge.imgmsg_to_cv2(image, "bgr8")
             pi = self.head_pose
-            cv2.rectangle(cv_image, (int(pi.x - 50), int(pi.y - 50)), (int(pi.x + 50), int(pi.y + 50)), (255, 0, 0), 2)
+            x1 = int(pi.x - 50)
+            y1 = int(pi.y - 50)
+            x2 = int(pi.x + 50)
+            y2 = int(pi.y + 50)
+            cv2.rectangle(cv_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
             cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
+            crop_image = cv_image[int(pi.x - 50)]
             cv2.imshow("Face & Head ", cv_image)
             cv2.waitKey(1)
 
