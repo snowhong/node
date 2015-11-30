@@ -27,7 +27,6 @@ class Face_Service():
             self.pixel_center = Vector3()
             self.people_number = 0
 
-            #self.pub = rospy.Publisher('face_detected', Int8, queue_size=10)
             self.pub = rospy.Publisher('/face/image_raw', Image, queue_size=1)
             self.data = Bool()
             self.rate = rospy.Rate(10)
@@ -82,10 +81,6 @@ class Face_Service():
                     cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
                     num = num - 1
 
-                #draw the face rectangle
-                detection = self.detect_faces(cv_image)
-                for (x, y, w, h) in detection:
-                    cv2.rectangle(cv_image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
                 cv2.imshow("Face & Head ", cv_image)
                 cv2.waitKey(1)
@@ -93,33 +88,7 @@ class Face_Service():
             except CvBridgeError, e:
                 print e
 
-            #publish how many skeleton detected
-            #self.pub.publish(len(self.pixel_center))
 
-        def detect_faces(self, image):
-                #parameters
-                _scale_Factor=1.2
-                _min_Neighbor=5
-                _min_Size=(30,30)
-                flags = cv2.cv.CV_HAAR_SCALE_IMAGE
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-                #face data_base
-                rospack = rospkg.RosPack()
-                haar_data = rospack.get_path('skk') + '/config'
-                cascPath = os.path.join(haar_data,"haarcascade_frontalface_default.xml")
-                faceCascade = cv2.CascadeClassifier(cascPath)
-
-                #detect faces
-                faces = faceCascade.detectMultiScale(
-                        gray,
-                        scaleFactor=1.2,
-                        minNeighbors=5,
-                        minSize=(30, 30),
-                        flags=cv2.cv.CV_HAAR_SCALE_IMAGE
-                        )
-
-                return faces
 
 if __name__ == '__main__':
         rospy.init_node('face_srv')
