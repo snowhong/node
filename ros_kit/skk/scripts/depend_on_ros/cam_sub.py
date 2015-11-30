@@ -18,7 +18,8 @@ class Face_Service():
         def __init__(self):
             self.bridge = CvBridge()
             self.head_sub = message_filters.Subscriber("/skeleton", UserTrackerPoseArray)
-            self.image_sub = message_filters.Subscriber("/usb_cam/image_raw", Image)
+            #self.image_sub = message_filters.Subscriber("/usb_cam/image_raw", Image)
+            self.image_sub = message_filters.Subscriber("/face/image_raw", Image)
             #ts = message_filters.TimeSynchronizer([self.head_sub, self.image_sub], 1)
             ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.head_sub], 1, 1)
             ts.registerCallback(self.callback)

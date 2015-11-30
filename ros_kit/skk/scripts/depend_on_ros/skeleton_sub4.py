@@ -53,8 +53,10 @@ class Skeleton():
             y2 = int(pi.y + 50)
             cv2.rectangle(cv_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
             cv2.circle(cv_image, (int(pi.x), int(pi.y)), 10, (255,0,0),-1)
-            crop_image = cv_image[int(pi.x - 50)]
+            #imh[y:y+h, x:x+w]
+            crop_image = cv_image[y1:y1 + (y2 - y1), x1:x1 + (x2 - x1)]
             cv2.imshow("Face & Head ", cv_image)
+            cv2.imshow("Crop Head", crop_image)
             cv2.waitKey(1)
 
             resize_image =  
